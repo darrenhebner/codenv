@@ -1,6 +1,7 @@
 import "https://unpkg.com/prismjs@1.30.0";
 import * as prettier from "https://unpkg.com/prettier@3.5.3/standalone.mjs";
 import * as prettierPluginHtml from "https://unpkg.com/prettier@3.5.3/plugins/html.mjs";
+import { DEFAULTS } from "./defaults.js";
 
 // Only execute highlighting if the browser supports CSS.highlights
 if (CSS.highlights) {
@@ -72,13 +73,26 @@ if (CSS.highlights) {
       return;
     }
 
+    const textLength = codeBlock.firstChild.textContent.length;
     let pos = 0;
+
     for (const token of tokens) {
       if (token.type) {
-        const range = new Range();
-        range.setStart(codeBlock.firstChild, pos);
-        range.setEnd(codeBlock.firstChild, pos + token.length);
-        CSS.highlights.get(token.alias ?? token.type)?.add(range);
+        try {
+          // Ensure we don't create ranges beyond the text length
+          if (pos >= textLength) {
+            break;
+          }
+
+          const endPos = Math.min(pos + token.length, textLength);
+          const range = new Range();
+          range.setStart(codeBlock.firstChild, pos);
+          range.setEnd(codeBlock.firstChild, endPos);
+          CSS.highlights.get(token.alias ?? token.type)?.add(range);
+        } catch (error) {
+          console.warn("Error highlighting token:", error);
+          // Continue with next token
+        }
       }
       pos += token.length;
     }
@@ -90,26 +104,35 @@ if (CSS.highlights) {
    * @param {Object} lang - The Prism language object to use for tokenizing
    */
   const highlight = (codeBlock, lang = Prism.languages.javascript) => {
-    if (!codeBlock.innerText) {
-      return;
+    try {
+      if (!codeBlock || !codeBlock.innerText) {
+        return;
+      }
+
+      if (codeBlock.firstChild) {
+        flattenTextNodes(codeBlock);
+      }
+
+      if (!codeBlock.firstChild) {
+        codeBlock.appendChild(document.createTextNode(codeBlock.innerText));
+      }
+
+      // Ensure the inner text and text node are synchronized
+      if (codeBlock.firstChild.textContent !== codeBlock.innerText) {
+        // codeBlock.firstChild.textContent = codeBlock.innerText;
+      }
+
+      const tokens = Prism.tokenize(codeBlock.innerText, lang);
+
+      // Clear all current highlights
+      tokenTypes.forEach((tokenType) => {
+        CSS.highlights.get(tokenType).clear();
+      });
+
+      paintTokenHighlights(codeBlock, tokens);
+    } catch (error) {
+      console.warn("Error during highlighting:", error);
     }
-
-    if (codeBlock.firstChild) {
-      flattenTextNodes(codeBlock);
-    }
-
-    if (!codeBlock.firstChild) {
-      codeBlock.appendChild(document.createTextNode(codeBlock.innerText));
-    }
-
-    const tokens = Prism.tokenize(codeBlock.innerText, lang);
-
-    // Clear all current highlights
-    tokenTypes.forEach((tokenType) => {
-      CSS.highlights.get(tokenType).clear();
-    });
-
-    paintTokenHighlights(codeBlock, tokens);
   };
 
   /**
@@ -183,6 +206,10 @@ if (CSS.highlights) {
   });
 
   /**
+   * Default content is imported from defaults.js module
+   */
+
+  /**
    * Loads cached content into editors
    * @returns {Promise<void>}
    */
@@ -190,57 +217,79 @@ if (CSS.highlights) {
     try {
       const cache = await caches.open("asset-cache");
 
-      // Get cached content
-      const markup = await cache.match("/preview/markup.html");
-      const css = await cache.match("/preview/styles.css");
-      const javascript = await cache.match("/preview/script.js");
+      // Safely get cached content
+      let htmlContent = DEFAULTS.html;
+      let cssContent = DEFAULTS.css;
+      let jsContent = DEFAULTS.javascript;
 
-      // If we have cached content, load it into the editors
-      if (markup && css && javascript) {
-        const htmlContent = await markup.text();
-        const cssContent = await css.text();
-        const jsContent = await javascript.text();
+      try {
+        const markup = await cache.match("/preview/markup.html");
+        if (markup) {
+          htmlContent = await markup.text();
+        }
+      } catch (e) {
+        console.warn("Could not load cached HTML, using default");
+      }
 
-        // Update all editors
-        const editors = [
-          {
-            element: html,
-            content: htmlContent,
-            hidden: hiddenHtml,
-            lang: Prism.languages.html,
-          },
-          {
-            element: css,
-            content: cssContent,
-            hidden: hiddenCss,
-            lang: Prism.languages.css,
-          },
-          {
-            element: js,
-            content: jsContent,
-            hidden: hiddenJavascript,
-            lang: Prism.languages.javascript,
-          },
-        ];
+      try {
+        const css = await cache.match("/preview/styles.css");
+        if (css) {
+          cssContent = await css.text();
+        }
+      } catch (e) {
+        console.warn("Could not load cached CSS, using default");
+      }
 
-        editors.forEach(({ element, content, hidden, lang }) => {
+      try {
+        const javascript = await cache.match("/preview/script.js");
+        if (javascript) {
+          jsContent = await javascript.text();
+        }
+      } catch (e) {
+        console.warn("Could not load cached JavaScript, using default");
+      }
+
+      // Update all editors safely
+      const editors = [
+        {
+          element: html,
+          content: htmlContent,
+          hidden: hiddenHtml,
+          lang: Prism.languages.html,
+        },
+        {
+          element: css,
+          content: cssContent,
+          hidden: hiddenCss,
+          lang: Prism.languages.css,
+        },
+        {
+          element: js,
+          content: jsContent,
+          hidden: hiddenJavascript,
+          lang: Prism.languages.javascript,
+        },
+      ];
+
+      editors.forEach(({ element, content, hidden, lang }) => {
+        try {
           // Update content
           element.innerText = content;
           hidden.value = content;
 
-          // Ensure element has a text node
-          if (content && !element.firstChild) {
-            element.appendChild(document.createTextNode(content));
-          }
-
-          // Apply highlighting
+          // Apply highlighting with a delay to avoid race conditions
           if (content) {
-            highlight(element, lang);
+            setTimeout(() => {
+              highlight(element, lang);
+            }, 0);
           }
-        });
-      }
+        } catch (err) {
+          console.warn(`Error updating editor: ${err.message}`);
+        }
+      });
     } catch (error) {
       console.error("Error loading cached content:", error);
+      // The defaultContent will already be used due to the try/catch blocks above
     }
   }
 

@@ -146,6 +146,7 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       border: 16px solid var(--background);
+      gap: 16px;
     }
 
     a {
@@ -199,8 +200,10 @@
     }
 
     iframe {
+      background: white;
       width: 100%;
       height: 100%;
+      border-radius: 8px;
     }
   }
 
