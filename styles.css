@@ -1,0 +1,292 @@
+:root {
+  /* Syntax highlighting colors from example */
+  --highlight-text: #f1eff7; /* Base text color - light gray/white */
+  --highlight-keyword: #ff6f9f; /* Keywords like const, let, if - pink */
+  --highlight-function: #2de0a7; /* Function names - bright teal */
+  --highlight-method: #2de0a7; /* Method names - bright teal */
+  --highlight-property: #2de0a7; /* Properties - bright teal */
+  --highlight-comment: #6d6db5; /* Comments - lavender/purple */
+  --highlight-string: #6dfedf; /* Strings - cyan/teal */
+  --highlight-punctuation: #f1eff7; /* Punctuation - light gray/white */
+  --highlight-operator: #ff6f9f; /* Operators - pink (like keywords) */
+  --highlight-variable: #ff6f9f; /* Variables - pink */
+  --highlight-parameter: #f1eff7; /* Parameters - light gray/white */
+  --highlight-selector: #2de0a7; /* CSS selectors - bright teal */
+
+  /* UI colors */
+  --background: #212136;
+  --foreground: #292a44;
+  --active: #363759;
+  --text: rgb(107, 113, 125);
+  --active-text: #f8fafd;
+}
+
+@layer reset, layout;
+
+@layer syntax-highlighting {
+  /* Base text color */
+  ::highlight {
+    color: var(--highlight-text);
+  }
+
+  /* Comments */
+  ::highlight(comment),
+  ::highlight(prolog),
+  ::highlight(doctype),
+  ::highlight(cdata) {
+    color: var(--highlight-comment);
+    font-style: italic;
+  }
+
+  /* Punctuation */
+  ::highlight(punctuation),
+  ::highlight(brace) {
+    color: var(--highlight-punctuation);
+  }
+
+  /* Properties, methods, and functions */
+  ::highlight(property),
+  ::highlight(method),
+  ::highlight(function) {
+    color: var(--highlight-function);
+  }
+
+  /* Tags */
+  ::highlight(tag) {
+    color: var(--highlight-keyword);
+  }
+
+  /* Selectors in CSS */
+  ::highlight(selector) {
+    color: var(--highlight-selector);
+  }
+
+  /* Attribute names */
+  ::highlight(attr-name) {
+    color: var(--highlight-variable);
+  }
+
+  /* Strings */
+  ::highlight(string),
+  ::highlight(char),
+  ::highlight(regex) {
+    color: var(--highlight-string);
+  }
+
+  /* Keywords */
+  ::highlight(keyword),
+  ::highlight(atrule),
+  ::highlight(attr-value) {
+    color: var(--highlight-keyword);
+  }
+
+  /* Variables */
+  ::highlight(variable),
+  ::highlight(constant) {
+    color: var(--highlight-variable);
+  }
+
+  /* Parameters */
+  ::highlight(parameter) {
+    color: var(--highlight-parameter);
+  }
+
+  /* Operators */
+  ::highlight(operator),
+  ::highlight(entity),
+  ::highlight(url) {
+    color: var(--highlight-operator);
+  }
+
+  /* Boolean, numbers */
+  ::highlight(boolean),
+  ::highlight(number) {
+    color: var(--highlight-variable);
+  }
+
+  /* Other syntax elements */
+  ::highlight(builtin),
+  ::highlight(inserted) {
+    color: var(--highlight-function);
+  }
+
+  ::highlight(deleted),
+  ::highlight(class-name) {
+    color: var(--highlight-function);
+  }
+
+  /* Bold and italic styles */
+  ::highlight(important),
+  ::highlight(bold) {
+    font-weight: bold;
+  }
+
+  ::highlight(italic) {
+    font-style: italic;
+  }
+
+  ::highlight(entity) {
+    cursor: help;
+  }
+}
+
+@layer layout {
+  @layer general {
+    html {
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue",
+        sans-serif;
+      background: var(--background);
+    }
+
+    main {
+      width: 100dvw;
+      height: 100dvh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border: 16px solid var(--background);
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .tabs {
+      display: flex;
+      background: var(--foreground);
+    }
+
+    nav a {
+      text-decoration: none;
+      padding: 8px;
+      background: var(--background);
+    }
+
+    nav {
+      display: flex;
+      justify-content: space-between;
+      background: var(--foreground);
+    }
+
+    .editor:has(#html:focus) a[href="#html"],
+    .editor:has(#css:focus) a[href="#css"],
+    .editor:has(#js:focus) a[href="#js"] {
+      color: var(--active-text);
+      background: var(--active);
+    }
+
+    .editor {
+      height: 100%;
+      display: grid;
+      grid-template-columns: 1fr;
+      grid-template-rows: auto 1fr;
+      border-radius: 8px;
+      overflow: clip;
+    }
+
+    .panels {
+      scroll-snap-type: x mandatory;
+      overflow-x: auto;
+      display: flex;
+    }
+
+    .panels pre {
+      flex: 0 0 100%;
+      height: 100%;
+      scroll-snap-align: start;
+      outline: none;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+    }
+  }
+
+  @layer code {
+    script[visible],
+    style[visible],
+    pre {
+      display: block;
+      padding: 16px;
+      white-space: pre;
+      background: var(--foreground);
+      font-family: ui-monospace, FMono-Regular, SF Mono, Menlo, Consolas,
+        Liberation Mono, monospace;
+      overflow-x: auto;
+      tab-size: 2;
+      color: var(--highlight-text);
+      line-height: 1.6;
+    }
+  }
+}
+
+@layer reset {
+  /* 1. Use a more-intuitive box-sizing model */
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  /* 2. Remove default margin */
+  * {
+    margin: 0;
+  }
+
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    /* 3. Add accessible line-height */
+    line-height: 1.5;
+    /* 4. Improve text rendering */
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* 5. Improve media defaults */
+  img,
+  picture,
+  video,
+  canvas,
+  svg {
+    display: block;
+    max-width: 100%;
+  }
+
+  /* 6. Inherit fonts for form controls */
+  input,
+  button,
+  textarea,
+  select {
+    font: inherit;
+  }
+
+  /* 7. Avoid text overflows */
+  p,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    overflow-wrap: break-word;
+  }
+
+  /* 8. Improve line wrapping */
+  p {
+    text-wrap: pretty;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    text-wrap: balance;
+  }
+}

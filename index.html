@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Codeenv</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main>
+      <form method="post" action="/update" target="preview">
+        <div class="editor">
+          <nav>
+            <div class="tabs">
+              <a href="#html">index.html</a>
+              <a href="#css">styles.css</a>
+              <a href="#js">script.js</a>
+            </div>
+            <button type="submit">Save</button>
+          </nav>
+          <div class="panels">
+            <pre id="html"></pre>
+            <pre id="css"></pre>
+            <pre id="js"></pre>
+          </div>
+        </div>
+
+        <textarea name="html" hidden="true"></textarea>
+        <textarea name="css" hidden="true"></textarea>
+        <textarea name="javascript" hidden="true"></textarea>
+      </form>
+
+      <iframe name="preview" src="./preview" frameborder="0"></iframe>
+    </main>
+    <script type="module" src="script.js"></script>
+  </body>
+</html>
