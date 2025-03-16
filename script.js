@@ -1,6 +1,4 @@
-import "https://unpkg.com/prismjs@1.30.0";
-import * as prettier from "https://unpkg.com/prettier@3.5.3/standalone.mjs";
-import * as prettierPluginHtml from "https://unpkg.com/prettier@3.5.3/plugins/html.mjs";
+import "https://unpkg.com/prismjs@1.30.0/prism.js";
 import { DEFAULTS } from "./defaults.js";
 
 // Only execute highlighting if the browser supports CSS.highlights
@@ -301,17 +299,3 @@ if (CSS.highlights) {
   // Load cached content
   loadCachedContent();
 }
-
-// Handle form submission
-document.forms[0].addEventListener("submit", async (event) => {
-  const formatted = await prettier.format(
-    event.currentTarget.elements.html.value,
-    {
-      parser: "html",
-      plugins: [prettierPluginHtml],
-    }
-  );
-
-  // The formatted HTML will be handled by the service worker
-  // Logging removed since it was just for debugging
-});
