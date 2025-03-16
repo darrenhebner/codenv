@@ -221,6 +221,10 @@
       tab-size: 2;
       color: var(--highlight-text);
       line-height: 1.6;
+      
+      /* Disable spell-checking */
+      spellcheck: false;
+      -webkit-spell-check: none;
     }
   }
 }
