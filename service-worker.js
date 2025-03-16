@@ -13,21 +13,39 @@ const sw = self;
 
 // Log successful installation
 sw.addEventListener("install", (event) => {
+  console.log('Service Worker installed');
   event.waitUntil(self.skipWaiting());
 });
 
 // Activate the worker immediately
 sw.addEventListener("activate", (event) => {
+  console.log('Service Worker activated');
   event.waitUntil(clients.claim());
 });
 
+// Map of asset paths to content types and default content
+const ASSET_CONFIG = {
+  "/preview/styles.css": {
+    contentType: "text/css",
+    defaultContent: DEFAULTS.css
+  },
+  "/preview/script.js": {
+    contentType: "application/javascript",
+    defaultContent: DEFAULTS.javascript
+  }
+};
+
 sw.addEventListener("fetch", (event) => {
-  if (event.request.url.endsWith("/preview")) {
+  const url = new URL(event.request.url);
+  const path = url.pathname;
+  
+  // Handle the /preview endpoint (both GET and POST)
+  if (path === "/preview") {
     event.respondWith(
-      (async function handler() {
+      (async function handlePreview() {
         const cache = await caches.open("asset-cache");
 
-        // Process POST request - save to cache if it's a form submission
+        // Handle POST requests for form submissions
         if (event.request.method === "POST") {
           try {
             const formData = await event.request.formData();
@@ -54,61 +72,50 @@ sw.addEventListener("fetch", (event) => {
                 })
               ),
             ]);
+
+            // Return the HTML content directly
+            return new Response(html, {
+              headers: { "Content-Type": "text/html" },
+            });
           } catch (error) {
             console.error("Error processing form data:", error);
+            return new Response("Error processing form", { status: 500 });
           }
         }
 
+        // Handle GET requests for preview
         const markup = await cache.match("/preview/markup.html");
-
         if (markup) {
           return markup;
         } else {
+          // If markup.html isn't cached, use default HTML
           return new Response(DEFAULTS.html, {
             headers: { "Content-Type": "text/html" },
           });
         }
       })()
     );
+    return;
   }
 
-  // Handle request for the CSS file
-  if (event.request.url.endsWith("/preview/styles.css")) {
+  // Generic asset handler for CSS and JS assets
+  if (ASSET_CONFIG[path]) {
     event.respondWith(
-      (async function handler() {
+      (async function handleAsset() {
         const cache = await caches.open("asset-cache");
-        const cssResponse = await cache.match("/preview/styles.css");
-
-        if (cssResponse) {
-          return cssResponse;
-        } else {
-          // Return default CSS if not found
-          return new Response(DEFAULTS.css, {
-            headers: { "Content-Type": "text/css" },
-          });
+        
+        // Check the cache first
+        const cachedResponse = await cache.match(path);
+        if (cachedResponse) {
+          return cachedResponse;
         }
+        
+        // If not in cache, use the default
+        const config = ASSET_CONFIG[path];
+        return new Response(config.defaultContent, {
+          headers: { "Content-Type": config.contentType },
+        });
       })()
     );
   }
-
-  // Handle request for the JavaScript file
-  if (event.request.url.endsWith("/preview/script.js")) {
-    event.respondWith(
-      (async function handler() {
-        const cache = await caches.open("asset-cache");
-        const jsResponse = await cache.match("/preview/script.js");
-
-        if (jsResponse) {
-          return jsResponse;
-        } else {
-          // Return default JS if not found
-          return new Response(DEFAULTS.javascript, {
-            headers: { "Content-Type": "application/javascript" },
-          });
-        }
-      })()
-    );
-  }
-
-  // No need to handle defaults.js requests any more, as we're importing it directly
 });
