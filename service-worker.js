@@ -64,22 +64,7 @@ sw.addEventListener("fetch", (event) => {
         if (markup) {
           return markup;
         } else {
-          // Create a simple fallback page if nothing is cached
-          const html = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Preview</title>
-  <link rel="stylesheet" href="/preview/styles.css">
-  <script src="/preview/script.js" defer></script>
-</head>
-<body>
-  ${DEFAULTS.previewHTML}
-</body>
-</html>`;
-
-          return new Response(html, {
+          return new Response(DEFAULTS.html, {
             headers: { "Content-Type": "text/html" },
           });
         }

@@ -47,8 +47,4 @@ console.log('Script loaded and ready!');
 document.addEventListener('DOMContentLoaded', () => {
   console.log('DOM fully loaded and parsed');
 });`,
-
-  // HTML fragment used in the preview fallback page
-  previewHTML: `<h1>Welcome to your project</h1>
-<p>Start editing in the main window to see your changes here.</p>`
 };
