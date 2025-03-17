@@ -56,9 +56,7 @@ if (CSS.highlights) {
    * @param {HTMLElement} element - The element to normalize
    */
   const flattenTextNodes = (element) => {
-    if (element.firstChild) {
-      element.normalize();
-    }
+    element.normalize();
   };
 
   /**
@@ -106,7 +104,6 @@ if (CSS.highlights) {
       if (!codeBlock || !codeBlock.innerText) {
         return;
       }
-
       if (codeBlock.firstChild) {
         flattenTextNodes(codeBlock);
       }
@@ -298,13 +295,13 @@ if (CSS.highlights) {
 
   // Load cached content
   loadCachedContent();
-  
+
   // Add keyboard shortcut for saving (Cmd+S or Ctrl+S)
   document.addEventListener("keydown", (event) => {
     // Check for Cmd+S (Mac) or Ctrl+S (Windows)
     if ((event.metaKey || event.ctrlKey) && event.key === "s") {
       event.preventDefault(); // Prevent the browser's save dialog
-      
+
       // Submit the form
       document.forms[0].requestSubmit();
     }

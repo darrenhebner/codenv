@@ -16,11 +16,20 @@
     <main>
       <form method="post" target="preview" action="/preview">
         <div class="editor">
+          <input type="radio" name="tab" value="html" id="tab-html" checked>
+          <input type="radio" name="tab" value="css" id="tab-css">
+          <input type="radio" name="tab" value="js" id="tab-js">
           <nav>
             <div class="tabs">
-              <a href="#html">index.html</a>
-              <a href="#css">styles.css</a>
-              <a href="#js">script.js</a>
+              <label for="tab-html">
+                <span>index.html</span>
+              </label>
+              <label for="tab-css">
+                <span>styles.css</span>
+              </label>
+              <label for="tab-js">
+                <span>script.js</span>
+              </label>
             </div>
             <button type="submit">Save</button>
           </nav>
