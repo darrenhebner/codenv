@@ -96,10 +96,13 @@ if (CSS.highlights) {
 
     // console.log(tokens);
 
-    // Clear all current highlights
-    tokenTypes.forEach((tokenType) => {
-      CSS.highlights.get(tokenType).clear();
-    });
+    for (const highlight of CSS.highlights.values()) {
+      for (const range of highlight.values()) {
+        if (range.startContainer === codeBlock.firstChild) {
+          highlight.delete(range);
+        }
+      }
+    }
 
     // Paint all token highlights
     paintTokenHighlights(codeBlock, tokens);
