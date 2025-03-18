@@ -13,13 +13,11 @@ const sw = self;
 
 // Log successful installation
 sw.addEventListener("install", (event) => {
-  console.log('Service Worker installed');
   event.waitUntil(self.skipWaiting());
 });
 
 // Activate the worker immediately
 sw.addEventListener("activate", (event) => {
-  console.log('Service Worker activated');
   event.waitUntil(clients.claim());
 });
 
@@ -27,18 +25,18 @@ sw.addEventListener("activate", (event) => {
 const ASSET_CONFIG = {
   "/preview/styles.css": {
     contentType: "text/css",
-    defaultContent: DEFAULTS.css
+    defaultContent: DEFAULTS.css,
   },
   "/preview/script.js": {
     contentType: "application/javascript",
-    defaultContent: DEFAULTS.javascript
-  }
+    defaultContent: DEFAULTS.javascript,
+  },
 };
 
 sw.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
   const path = url.pathname;
-  
+
   // Handle the /preview endpoint (both GET and POST)
   if (path === "/preview") {
     event.respondWith(
@@ -103,13 +101,13 @@ sw.addEventListener("fetch", (event) => {
     event.respondWith(
       (async function handleAsset() {
         const cache = await caches.open("asset-cache");
-        
+
         // Check the cache first
         const cachedResponse = await cache.match(path);
         if (cachedResponse) {
           return cachedResponse;
         }
-        
+
         // If not in cache, use the default
         const config = ASSET_CONFIG[path];
         return new Response(config.defaultContent, {
