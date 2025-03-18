@@ -1,6 +1,8 @@
 import "https://unpkg.com/prismjs@1.30.0/prism.js";
 import { DEFAULTS } from "./defaults.js";
 
+Prism.manual = true;
+
 // Only execute highlighting if the browser supports CSS.highlights
 if (CSS.highlights) {
   /**
@@ -65,30 +67,14 @@ if (CSS.highlights) {
    * @param {PrismToken[]} tokens - Array of tokens from Prism.tokenize
    */
   const paintTokenHighlights = (codeBlock, tokens) => {
-    if (!codeBlock.firstChild || !tokens.length) {
-      return;
-    }
-
-    const textLength = codeBlock.firstChild.textContent.length;
+    // Paint new highlights
     let pos = 0;
-
     for (const token of tokens) {
       if (token.type) {
-        try {
-          // Ensure we don't create ranges beyond the text length
-          if (pos >= textLength) {
-            break;
-          }
-
-          const endPos = Math.min(pos + token.length, textLength);
-          const range = new Range();
-          range.setStart(codeBlock.firstChild, pos);
-          range.setEnd(codeBlock.firstChild, endPos);
-          CSS.highlights.get(token.alias ?? token.type)?.add(range);
-        } catch (error) {
-          console.warn("Error highlighting token:", error);
-          // Continue with next token
-        }
+        const range = new Range();
+        range.setStart(codeBlock.firstChild, pos);
+        range.setEnd(codeBlock.firstChild, pos + token.length);
+        CSS.highlights.get(token.alias ?? token.type)?.add(range);
       }
       pos += token.length;
     }
@@ -100,34 +86,23 @@ if (CSS.highlights) {
    * @param {Object} lang - The Prism language object to use for tokenizing
    */
   const highlight = (codeBlock, lang = Prism.languages.javascript) => {
-    try {
-      if (!codeBlock || !codeBlock.innerText) {
-        return;
-      }
-      if (codeBlock.firstChild) {
-        flattenTextNodes(codeBlock);
-      }
+    // We need the contenteditable to hold only 1 child textNode that
+    // contains all the text. If we don’t do this, the highlight ranges
+    // might go out of bounds.
+    flattenTextNodes(codeBlock);
 
-      if (!codeBlock.firstChild) {
-        codeBlock.appendChild(document.createTextNode(codeBlock.innerText));
-      }
+    // Tokenize the code
+    let tokens = Prism.tokenize(codeBlock.innerText, lang);
 
-      // Ensure the inner text and text node are synchronized
-      if (codeBlock.firstChild.textContent !== codeBlock.innerText) {
-        // codeBlock.firstChild.textContent = codeBlock.innerText;
-      }
+    // console.log(tokens);
 
-      const tokens = Prism.tokenize(codeBlock.innerText, lang);
+    // Clear all current highlights
+    tokenTypes.forEach((tokenType) => {
+      CSS.highlights.get(tokenType).clear();
+    });
 
-      // Clear all current highlights
-      tokenTypes.forEach((tokenType) => {
-        CSS.highlights.get(tokenType).clear();
-      });
-
-      paintTokenHighlights(codeBlock, tokens);
-    } catch (error) {
-      console.warn("Error during highlighting:", error);
-    }
+    // Paint all token highlights
+    paintTokenHighlights(codeBlock, tokens);
   };
 
   /**
@@ -269,14 +244,11 @@ if (CSS.highlights) {
       editors.forEach(({ element, content, hidden, lang }) => {
         try {
           // Update content
-          element.innerText = content;
+          element.textContent = content;
           hidden.value = content;
 
-          // Apply highlighting with a delay to avoid race conditions
           if (content) {
-            setTimeout(() => {
-              highlight(element, lang);
-            }, 0);
+            highlight(element, lang);
           }
         } catch (err) {
           console.warn(`Error updating editor: ${err.message}`);
@@ -287,11 +259,6 @@ if (CSS.highlights) {
       // The defaultContent will already be used due to the try/catch blocks above
     }
   }
-
-  // Initial highlighting
-  highlight(html, Prism.languages.html);
-  highlight(css, Prism.languages.css);
-  highlight(js, Prism.languages.javascript);
 
   // Load cached content
   loadCachedContent();
