@@ -16,9 +16,9 @@
     <main>
       <form method="post" target="preview" action="/preview">
         <div class="editor">
-          <input type="radio" name="tab" value="html" id="tab-html" checked>
-          <input type="radio" name="tab" value="css" id="tab-css">
-          <input type="radio" name="tab" value="js" id="tab-js">
+          <input type="radio" name="tab" value="html" id="tab-html" checked />
+          <input type="radio" name="tab" value="css" id="tab-css" />
+          <input type="radio" name="tab" value="js" id="tab-js" />
           <nav>
             <div class="tabs">
               <label for="tab-html">
@@ -31,7 +31,10 @@
                 <span>script.js</span>
               </label>
             </div>
-            <button type="submit">Save</button>
+            <div>
+              <button id="share" type="button">Share</button>
+              <button type="submit">Save</button>
+            </div>
           </nav>
           <div class="panels">
             <pre id="html" spellcheck="false"></pre>
@@ -47,6 +50,10 @@
 
       <iframe name="preview" src="./preview" frameborder="0"></iframe>
     </main>
+    <script
+      language="javascript"
+      src="https://unpkg.com/lz-string@1.4.4/libs/lz-string.min.js"
+    ></script>
     <script type="module" src="script.js"></script>
   </body>
 </html>

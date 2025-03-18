@@ -276,4 +276,33 @@ if (CSS.highlights) {
       document.forms[0].requestSubmit();
     }
   });
+
+  const shareButton = document.querySelector("#share");
+
+  shareButton.addEventListener("click", async () => {
+    const compressedHTML = LZString.compressToEncodedURIComponent(
+      hiddenHtml.value
+    );
+    const compressedCSS = LZString.compressToEncodedURIComponent(
+      hiddenCss.value
+    );
+    const compressedJS = LZString.compressToEncodedURIComponent(
+      hiddenJavascript.value
+    );
+
+    const url = new URL(window.location.origin);
+
+    url.searchParams.set("html", compressedHTML);
+    url.searchParams.set("css", compressedCSS);
+    url.searchParams.set("js", compressedJS);
+
+    const preview = document.querySelector("iframe[name=preview]");
+    const title = `${preview.contentDocument.title} | Codenv`;
+
+    navigator.share({
+      title,
+      text: "See what I built with codenv.app",
+      url: url.toString(),
+    });
+  });
 }
