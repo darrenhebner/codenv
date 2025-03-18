@@ -222,6 +222,19 @@ if (CSS.highlights) {
         console.warn("Could not load cached JavaScript, using default");
       }
 
+      const searchParams = new URLSearchParams(window.location.search);
+      const htmlParam = searchParams.get("html");
+      const cssParam = searchParams.get("css");
+      const jsParam = searchParams.get("js");
+
+      if (htmlParam || cssParam || jsParam) {
+        htmlContent = LZString.decompressFromEncodedURIComponent(htmlParam);
+        cssContent = LZString.decompressFromEncodedURIComponent(cssParam);
+        jsContent = LZString.decompressFromEncodedURIComponent(jsParam);
+
+        // next step is to make this work with the preview
+      }
+
       // Update all editors safely
       const editors = [
         {
